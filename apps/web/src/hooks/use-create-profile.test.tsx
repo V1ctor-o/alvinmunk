@@ -344,7 +344,8 @@ describe('useCreateProfile', () => {
   });
 
   it('reports a claim failure without saving a profile', async () => {
-    await mount('landing');
+    const created: Profile[] = [];
+    await mount('landing', (p) => created.push(p));
     await setHandle('failinguser');
     claimHandleMock.mockRejectedValueOnce(new Error('claim failed'));
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -353,13 +354,73 @@ describe('useCreateProfile', () => {
         await latest.createProfile();
       });
       expect(setProfileMock).not.toHaveBeenCalled();
-      expect(trackErrorMock).toHaveBeenCalledWith(expect.any(Error), {
-        flow: 'create_profile', from: 'landing',
-      });
-      expect(toastMock.error).toHaveBeenCalled();
+      expect(trackErrorMock).toHaveBeenCalledWith(expect.any(Error), { flow: 'create_profile', from: 'landing' });
+      expect(trackMock).not.toHaveBeenCalledWith('profile_created', expect.anything());
+      expect(toastMock.success).not.toHaveBeenCalled();
+      expect(toastMock.error).toHaveBeenCalledWith('claim failed');
+      expect(created).toEqual([]);
       expect(latest.creating).toBe(false);
     } finally {
       consoleError.mockRestore();
     }
+  });
+
+  // Landing and /app onboarding used to carry near-duplicate copy that drifted (#240); both
+  // now read the one shared `onboard.*` set, and only the claim page keeps its own.
+  describe('messages', () => {
+    it.each(['app', 'landing'] as const)('uses the shared onboarding copy from %s', async (from) => {
+      await mount(from);
+      await setHandle('ab');
+      await act(async () => {
+        await latest.createProfile();
+      });
+      expect(toastMock.error).toHaveBeenLastCalledWith('Pick a handle — 3+ letters or numbers.');
+
+      availabilityMock.mockResolvedValue(TAKEN);
+      await setHandle('takenname');
+      await act(async () => {
+        await latest.createProfile();
+      });
+      expect(toastMock.error).toHaveBeenLastCalledWith('@takenname is taken — pick another.');
+
+      availabilityMock.mockResolvedValue(FREE);
+      await setHandle('freename');
+      await act(async () => {
+        await latest.createProfile();
+      });
+      expect(toastMock.success).toHaveBeenLastCalledWith('Your profile is live — @freename stamped on-chain.');
+    });
+
+    it('keeps the claim page on its own copy', async () => {
+      store.wallet = DEV_WALLET;
+      await mount('claim');
+      await setHandle('claimer');
+      await act(async () => {
+        await latest.createProfile();
+      });
+      expect(toastMock.success).toHaveBeenCalledWith("You're in — @claimer stamped on-chain.");
+    });
+  });
+
+  it.each(['app', 'landing'] as const)('skips the genesis tx for a new passkey wallet from %s', async (from) => {
+    connectMock.mockResolvedValue(PASSKEY_WALLET);
+    await mount(from, undefined, 'face-02');
+    await setHandle('passkeyuser');
+
+    await act(async () => {
+      await latest.createProfile();
+    });
+
+    expect(recordGenesisMock).not.toHaveBeenCalled();
+    expect(claimHandleMock).toHaveBeenCalledWith(PASSKEY_WALLET, 'passkeyuser');
+    expect(setProfileMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        handle: 'passkeyuser',
+        genesisTx: undefined,
+        avatar: { kind: 'face', id: 'face-02' },
+        source: from,
+      }),
+    );
+    expect(trackMock).toHaveBeenCalledWith('profile_created', { walletKind: 'passkey', from });
   });
 });

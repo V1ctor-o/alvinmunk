@@ -70,7 +70,7 @@ export function Onboarding() {
           disabled={creating || restoring || avail === 'taken' || avail === 'reserved'}
           className="w-full"
         >
-          {creating ? t('onboard.submitting') : t('onboard.submit')}
+          {creating ? t('onboard.creating') : t('onboard.submit')}
         </Button>
       </form>
 
