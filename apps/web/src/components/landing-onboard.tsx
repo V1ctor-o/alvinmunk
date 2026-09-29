@@ -6,9 +6,9 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { useWallet } from '@/components/wallet/wallet-provider';
 import { normalizeHandle } from '@/lib/profile';
-import { useCreateProfile, useHandleAvailability } from '@/hooks/use-profile-onboarding';
+import { useCreateProfile } from '@/hooks/use-create-profile';
 import { AvatarPicker } from '@/components/AvatarPicker';
-import { type FaceId } from '@/lib/avatar';
+import type { FaceId } from '@/lib/avatar';
 import { useTranslations } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,18 +18,20 @@ import { Input } from '@/components/ui/input';
  * provision a wallet (Face ID / dev), fund it, write genesis, and stamp the handle on-chain,
  * then drop you into the app. Returning users just get a shortcut into their app.
  *
- * NOTE: the heavy chain (registry → contracts → wallet → stellar-sdk) is DYNAMICALLY imported
- * inside the shared hooks. Statically importing it into this client component would pull stellar-sdk
- * into the server-rendered landing page and break the client-reference (renders as undefined).
+ * NOTE: the heavy chain (registry → contracts) modules are dynamically imported
+ * inside the shared hook. Statically importing them into this client component would
+ * pull stellar-sdk into the server-rendered landing page and break the client-reference.
  */
 export function LandingOnboard() {
   const t = useTranslations();
   const { profile } = useWallet();
   const router = useRouter();
-  const [handle, setHandle] = useState('');
   const [face, setFace] = useState<FaceId | undefined>();
-  const avail = useHandleAvailability(handle);
-  const { creating, createProfile } = useCreateProfile();
+  const { handle, setHandle, avail, reservedUntil, creating, createProfile } = useCreateProfile({
+    from: 'landing',
+    face,
+    onCreated: () => router.push('/app'),
+  });
 
   // Returning user: skip straight to the app.
   if (profile) {
@@ -47,9 +49,7 @@ export function LandingOnboard() {
       className="w-full max-w-md"
       onSubmit={(e) => {
         e.preventDefault();
-        void createProfile(handle, face, 'landing').then((created) => {
-          if (created) router.push('/app');
-        });
+        void createProfile();
       }}
     >
       <div className="glass flex items-center gap-2 rounded-full p-1.5">
@@ -62,7 +62,7 @@ export function LandingOnboard() {
           aria-describedby="landing-handle-status"
           className="h-11 flex-1 border-0 bg-transparent focus-visible:ring-0"
         />
-        <Button type="submit" variant="flow" size="md" disabled={creating || avail === 'taken'} className="shrink-0">
+        <Button type="submit" variant="flow" size="md" disabled={creating || avail === 'taken' || avail === 'reserved'} className="shrink-0">
           {creating ? t('onboard.creating') : t('onboard.startFree')}
           {!creating && <ArrowRight className="size-4" />}
         </Button>
@@ -71,6 +71,7 @@ export function LandingOnboard() {
         {avail === 'checking' && <span className="text-muted-foreground">{t('onboard.checking')}</span>}
         {avail === 'free' && <span className="text-secondary">{t('onboard.handleFree', { handle: normalizeHandle(handle) })}</span>}
         {avail === 'taken' && <span className="text-destructive">{t('onboard.handleTaken', { handle: normalizeHandle(handle) })}</span>}
+        {avail === 'reserved' && reservedUntil && <span className="text-destructive">{t('onboard.handleReserved', { handle: normalizeHandle(handle), date: reservedUntil })}</span>}
         {avail === 'idle' && <span className="text-muted-foreground">{t('onboard.pill')}</span>}
       </p>
       <div className="mt-4 flex flex-col items-center gap-2">

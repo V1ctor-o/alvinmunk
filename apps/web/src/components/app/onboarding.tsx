@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useCreateProfile } from '@/hooks/use-create-profile';
 import { normalizeHandle } from '@/lib/profile';
-import { useCreateProfile, useHandleAvailability } from '@/hooks/use-profile-onboarding';
 import { useTranslations } from '@/lib/i18n';
 import { Crest } from '@/components/brand/crest';
 import { AvatarPicker } from '@/components/AvatarPicker';
@@ -13,10 +13,11 @@ import { Input } from '@/components/ui/input';
 
 export function Onboarding() {
   const t = useTranslations();
-  const [handle, setHandle] = useState('');
   const [face, setFace] = useState<FaceId | undefined>();
-  const avail = useHandleAvailability(handle);
-  const { creating, createProfile } = useCreateProfile();
+  const { handle, setHandle, avail, reservedUntil, creating, createProfile } = useCreateProfile({
+    from: 'app',
+    face,
+  });
 
   return (
     <div className="relative container flex max-w-md flex-col items-center gap-8 py-20">
@@ -44,7 +45,7 @@ export function Onboarding() {
         className="flex w-full flex-col items-center gap-3"
         onSubmit={(e) => {
           e.preventDefault();
-          void createProfile(handle, face, 'app');
+          void createProfile();
         }}
       >
         <Input
@@ -60,8 +61,9 @@ export function Onboarding() {
           {avail === 'checking' && <span className="text-muted-foreground">{t('onboard.checking')}</span>}
           {avail === 'free' && <span className="text-secondary">{t('onboard.handleFree', { handle: normalizeHandle(handle) })}</span>}
           {avail === 'taken' && <span className="text-destructive">{t('onboard.handleTaken', { handle: normalizeHandle(handle) })}</span>}
+          {avail === 'reserved' && reservedUntil && <span className="text-destructive">{t('onboard.handleReserved', { handle: normalizeHandle(handle), date: reservedUntil })}</span>}
         </p>
-        <Button type="submit" size="lg" disabled={creating || avail === 'taken'} className="w-full">
+        <Button type="submit" size="lg" disabled={creating || avail === 'taken' || avail === 'reserved'} className="w-full">
           {creating ? t('onboard.creating') : t('onboard.submit')}
         </Button>
       </form>
