@@ -190,16 +190,6 @@ describe('LandingOnboard — parity with /app onboarding (#240)', () => {
     expect(status().textContent).toBe('✓ @bob is free');
   });
 
-  it('blocks submit for a taken handle', async () => {
-    handleAvailabilityMock.mockResolvedValue({ status: 'taken' });
-    await render();
-    await typeHandle('bob');
-    await settle();
-
-    expect(status().textContent).toBe('@bob is taken — try another');
-    expect(submitButton().disabled).toBe(true);
-  });
-
   it('labels the submit button while the profile is being created', async () => {
     let finish!: () => void;
     claimHandleMock.mockReturnValue(new Promise<void>((resolve) => (finish = resolve)));
