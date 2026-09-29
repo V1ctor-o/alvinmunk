@@ -52,7 +52,7 @@ export function LandingOnboard() {
         void createProfile();
       }}
     >
-      <div className="glass flex items-center gap-2 rounded-full p-1.5">
+      <div className="glass flex items-center gap-2 rounded-full p-1.5 focus-within:ring-2 focus-within:ring-ring/40">
         <span className="pl-3 text-lg text-muted-foreground">@</span>
         <Input
           value={handle}
