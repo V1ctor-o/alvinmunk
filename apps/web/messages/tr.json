@@ -80,6 +80,7 @@
   "onboard.errTaken": "@{handle} alınmış — başka birini dene.",
   "onboard.errReserved": "@{handle} yeni bırakıldı; {date} tarihine kadar önceki sahibine ayrılmış — başka birini dene.",
   "onboard.success": "Profilin yayında — @{handle} zincire damgalandı.",
+  "onboard.restored": "Tekrar hoş geldin — @{handle} geri yüklendi.",
   "onboard.eyebrow": "Adım 1 / 1",
   "onboard.title": "Profilini oluştur",
   "onboard.subtitle": "Bir kullanıcı adı seç — geri kalanını biz hallederiz. İlk yıldızın bir dokunuş uzaklıkta.",
@@ -87,10 +88,17 @@
   "onboard.submit": "Profilimi oluştur",
   "onboard.footer": "Bu cihazda kaydedildi · test ağında ücretler karşılandı · tohum ifadesi yok.",
 
+  "onboard.app.or": "veya",
+  "onboard.app.restore": "Hesabım zaten var",
+  "onboard.app.restoring": "Hesabın aranıyor…",
+  "onboard.app.restoreNotFound": "Bu geçiş anahtarı için hesap bulunamadı — yeni bir hesap oluştur veya ilk kaydolduğun cihazı kullan.",
+  "onboard.app.restoreNoHandle": "Hesabın bulundu — henüz bir kullanıcı adı yok. Bitirmek için yukarıdan birini seç.",
+
   "onboard.claim.errShort": "Bir kullanıcı adı seç — 3 veya daha fazla harf ya da rakam.",
   "onboard.claim.errTaken": "@{handle} alınmış — başka birini dene.",
   "onboard.claim.errReserved": "@{handle} yeni bırakıldı; {date} tarihine kadar önceki sahibine ayrılmış — başka birini dene.",
   "onboard.claim.success": "İçerisindesin — @{handle} zincire damgalandı.",
+  "onboard.claim.restored": "Tekrar hoş geldin — @{handle} geri yüklendi.",
 
   "claim.handle.title": "Kullanıcı adını seç",
   "claim.handle.subtitle": "İnsanlar seni bulabilsin — ve seni adınla geri onaylayabilsin.",
@@ -272,5 +280,7 @@
   "people.suggest.mutual.other": "Tanıdığın {count} kişi onlara kefil oldu",
   "people.suggest.footnote": "Öneriler son zincir üstü kefalet etkinliğine dayanır — yeni kefaletler onaylandıkça güncellenir.",
   "people.suggest.view": "Görüntüle",
-  "people.suggest.viewAria": "{label} profilini görüntüle"
+  "people.suggest.viewAria": "{label} profilini görüntüle",
+
+  "configBanner.title": "Bu dağıtım yanlış yapılandırılmış — düzeltilene kadar hiçbir işlem gönderilemez."
 }
